@@ -37,3 +37,7 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+#blocking all data files from github for now
+*.rds
+*.gz
