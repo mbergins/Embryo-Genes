@@ -58,6 +58,7 @@ server <- function(input, output) {
             #slightly strange if else here, turns out inline if-else like this
             #is cool in a tidyverse pipe
             filter(Treatment %in% if(input$include_EtOH) c("Control","EtOH") else c("Control")) %>%
+            group_by(Timepoint,Strain,Treatment) %>%
             identity()
     })
     
