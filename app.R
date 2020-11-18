@@ -7,6 +7,7 @@ library(reactable)
 parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
 plot_range = c(floor(min(parnell_data$Mean-parnell_data$SE)), ceiling(max(parnell_data$Mean+parnell_data$SE)))
 parnell_data_list = read_rds(here('Parnell_data_split.rds'))
+parnell_data_full_list = read_rds(here('Parnell_data_full_split.rds'))
 
 gene_list = parnell_data %>% 
     group_by(Gene) %>% 
@@ -64,11 +65,24 @@ server <- function(input, output) {
             identity()
     })
     
+    selected_data_full <- reactive({
+        parnell_data_full_list[[input$gene]] %>%
+            filter(Strain %in% input$mouse_strains) %>%
+            #slightly strange if else here, turns out inline if-else like this
+            #is cool in a tidyverse pipe
+            filter(Treatment %in% if(input$include_PAE) c("Vehicle","EtOH") else c("Vehicle")) %>%
+            group_by(Timepoint,Strain,Treatment) %>%
+            identity()
+    })
+    
     output$expressionPlot <- renderPlot({
         if (dim(selected_data())[1] > 0) {
             ggplot(selected_data(), aes(x=Strain,y=Mean,fill=Treatment)) +
-                geom_bar(stat="identity",position="dodge") +
+                geom_bar(stat="identity",position="dodge",alpha=0.5) +
                 geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=0.2,position=position_dodge(width=0.9)) +
+                geom_point(data=selected_data_full(), 
+                           mapping=aes(x=Strain,y=values,color=Treatment), 
+                           position=position_jitterdodge(jitter.width=0.4)) +
                 facet_wrap(~Timepoint) +
                 ggtitle(input$gene) +
                 ylim(plot_range)
