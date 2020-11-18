@@ -5,6 +5,8 @@ library(ggplot2)
 library(reactable)
 
 parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
+parnell_data$Treatment = fct_relevel(as.factor(parnell_data$Treatment), c("PAE","Vehicle"))
+    
 plot_range = c(floor(min(parnell_data$Mean-parnell_data$SE)), ceiling(max(parnell_data$Mean+parnell_data$SE)))
 
 parnell_data_list = read_rds(here('Parnell_data_split.rds'))
@@ -72,6 +74,7 @@ server <- function(input, output) {
             return(data.frame())
         } else {
             parnell_data_list[[input$gene]] %>%
+                mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
                 filter(Strain %in% input$mouse_strains) %>%
                 #slightly strange if else here, turns out inline if-else like this
                 #is cool in a tidyverse pipe
@@ -86,6 +89,7 @@ server <- function(input, output) {
             return(data.frame())
         } else {
         parnell_data_full_list[[input$gene]] %>%
+            mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
             filter(Strain %in% input$mouse_strains) %>%
             #slightly strange if else here, turns out inline if-else like this
             #is cool in a tidyverse pipe
