@@ -6,6 +6,7 @@ library(reactable)
 
 parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
 plot_range = c(floor(min(parnell_data$Mean-parnell_data$SE)), ceiling(max(parnell_data$Mean+parnell_data$SE)))
+parnell_data_list = read_rds(here('Parnell_data_split.rds'))
 
 gene_list = parnell_data %>% 
     group_by(Gene) %>% 
@@ -23,8 +24,8 @@ ui <- fluidPage(
                         label = h2("Select Gene of Interest"),
                         choices = gene_list,
                         options = list(maxOptions = length(gene_list))),
-            checkboxInput("include_EtOH",
-                          label = 'Include EtOH Treatment',
+            checkboxInput("include_PAE",
+                          label = 'Include prenatal alcohol exposure (PAE) data',
                           value = F),
             checkboxGroupInput("mouse_strains", label = h3("Mouse Strains"), 
                                choices = list("C57BL6J" = "C57BL6J", "C57BL6N" = "C57BL6N"),
@@ -59,7 +60,7 @@ server <- function(input, output) {
             filter(Strain %in% input$mouse_strains) %>%
             #slightly strange if else here, turns out inline if-else like this
             #is cool in a tidyverse pipe
-            filter(Treatment %in% if(input$include_EtOH) c("Control","EtOH") else c("Control")) %>%
+            filter(Treatment %in% if(input$include_PAE) c("Vehicle","EtOH") else c("Vehicle")) %>%
             group_by(Timepoint,Strain,Treatment) %>%
             identity()
     })
