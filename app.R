@@ -55,8 +55,7 @@ ui <- fluidPage(
 server <- function(input, output) {
     
     selected_data <- reactive({
-        parnell_data %>%
-            filter(Gene == input$gene) %>%
+        parnell_data_list[[input$gene]] %>%
             filter(Strain %in% input$mouse_strains) %>%
             #slightly strange if else here, turns out inline if-else like this
             #is cool in a tidyverse pipe
