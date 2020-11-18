@@ -13,6 +13,7 @@ library(here)
 # parnell_data = parnell_data %>%
 #   mutate(Treatment = case_when(
 #     Treatment == "Control" ~ "Vehicle",
+#     Treatment == "EtOH" ~ "PAE",
 #     TRUE ~ Treatment
 #   )) %>%
 #   # mutate(Gene = as.factor(Gene),
@@ -24,15 +25,15 @@ library(here)
 #           here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'),
 #           compress="gz")
 
-# parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
-# parnell_grouped = parnell_data %>% group_by(Gene) %>% nest()
-# parnell_data_list = list()
-# 
-# for (i in 1:dim(parnell_grouped)[1]) {
-#   parnell_data_list[[parnell_grouped$Gene[i]]] = parnell_grouped$data[i][[1]] %>%
-#     mutate(Gene = parnell_grouped$Gene[i])
-# }
-# write_rds(parnell_data_list,here('Parnell_data_split.rds'),compress="gz")
+parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
+parnell_grouped = parnell_data %>% group_by(Gene) %>% nest()
+parnell_data_list = list()
+
+for (i in 1:dim(parnell_grouped)[1]) {
+  parnell_data_list[[parnell_grouped$Gene[i]]] = parnell_grouped$data[i][[1]] %>%
+    mutate(Gene = parnell_grouped$Gene[i])
+}
+write_rds(parnell_data_list,here('Parnell_data_split.rds'),compress="gz")
 
 parnell_data_full = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_table.rds')) %>%
   pivot_longer(!Gene,names_to= "data_set", values_to = "values") %>%
@@ -48,7 +49,7 @@ parnell_data_full = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_table
     TRUE ~ "Eh?")) %>%
   mutate(Treatment = case_when(
     str_detect(data_set,"Control") ~ "Vehicle",
-    str_detect(data_set,"EtOH") ~ "EtOH",
+    str_detect(data_set,"EtOH") ~ "PAE",
     TRUE ~ "Eh?")) %>%
   select(-data_set)
 
