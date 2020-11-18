@@ -66,7 +66,7 @@ server <- function(input, output) {
         if (dim(selected_data())[1] > 0) {
             ggplot(selected_data(), aes(x=Strain,y=Mean,fill=Treatment)) +
                 geom_bar(stat="identity",position="dodge") +
-                geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=0.2,position=dodge) +
+                geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=0.2,position=position_dodge(width=0.9)) +
                 facet_wrap(~Timepoint) +
                 ggtitle(input$gene) +
                 ylim(plot_range)
