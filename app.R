@@ -6,6 +6,7 @@ library(reactable)
 
 parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
 plot_range = c(floor(min(parnell_data$Mean-parnell_data$SE)), ceiling(max(parnell_data$Mean+parnell_data$SE)))
+
 parnell_data_list = read_rds(here('Parnell_data_split.rds'))
 parnell_data_full_list = read_rds(here('Parnell_data_full_split.rds'))
 
@@ -110,9 +111,9 @@ server <- function(input, output) {
     )
     
     output$download_full_data <- downloadHandler(
-        filename = "FAS__full_data_set.csv",
+        filename = "FAS_full_data_set.csv.gz",
         content = function(file) {
-            write_csv(parnell_data, file)
+            write_csv(read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_table.rds')), file)
         }
     )
     
