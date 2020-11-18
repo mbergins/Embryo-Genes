@@ -46,8 +46,11 @@ ui <- fluidPage(
     ),
     hr(),
     fluidRow(id = "download-button",
-             column(12,
-                    downloadButton("download_data_summary", "Download Data")
+             column(2,
+                    downloadButton("download_data_summary", "Download Selected Data")
+             ),
+             column(10,
+                    downloadButton("download_full_data", "Download Full Data Set")
              )
     )
 )
@@ -103,6 +106,13 @@ server <- function(input, output) {
         filename = "FAS_data_summary.csv",
         content = function(file) {
             write_csv(selected_data(), file)
+        }
+    )
+    
+    output$download_full_data <- downloadHandler(
+        filename = "FAS__full_data_set.csv",
+        content = function(file) {
+            write_csv(parnell_data, file)
         }
     )
     
