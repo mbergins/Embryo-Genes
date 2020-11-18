@@ -113,12 +113,12 @@ server <- function(input, output) {
         } else if (input$gene == "") {
             ggplot(data.frame(text = "Please Select a Gene"),
                    aes(x=0,y=0,label=text)) +
-                geom_text() +
+                geom_text(size=20) +
                 theme_void()
         } else {
             ggplot(data.frame(text = "Please Make a Different Selection\nNo Data Found"),
                    aes(x=0,y=0,label=text)) +
-                geom_text() +
+                geom_text(size=20) +
                 theme_void()
         }
     })
