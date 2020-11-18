@@ -22,10 +22,18 @@ ui <- fluidPage(
     
     sidebarLayout(
         sidebarPanel(
+            # selectizeInput(inputId = "gene",
+            #             label = h2("Select Gene of Interest"),
+            #             choices = gene_list,
+            #             options = list(maxOptions = length(gene_list))),
             selectizeInput(inputId = "gene",
-                        label = h2("Select Gene of Interest"),
-                        choices = gene_list,
-                        options = list(maxOptions = length(gene_list))),
+                           label = h2("Select Gene of Interest"),
+                           choices = gene_list,
+                           multiple = F,
+                           options = list(maxOptions = 50,
+                                          placeholder = "Please Select a Gene",
+                                          maxItems = 1,
+                                          onInitialize = I('function() { this.setValue(""); }'))),            
             checkboxInput("include_PAE",
                           label = 'Include prenatal alcohol exposure (PAE) data',
                           value = F),
@@ -33,7 +41,7 @@ ui <- fluidPage(
                                choices = list("C57BL6J" = "C57BL6J", "C57BL6N" = "C57BL6N"),
                                selected = c("C57BL6J","C57BL6N")),
         ),
-        # Show a plot of the generated distribution
+        
         mainPanel(
             plotOutput("expressionPlot")
             # downloadButton('download_plot',"Download Plot")
@@ -60,23 +68,31 @@ ui <- fluidPage(
 server <- function(input, output) {
     
     selected_data <- reactive({
-        parnell_data_list[[input$gene]] %>%
-            filter(Strain %in% input$mouse_strains) %>%
-            #slightly strange if else here, turns out inline if-else like this
-            #is cool in a tidyverse pipe
-            filter(Treatment %in% if(input$include_PAE) c("Vehicle","EtOH") else c("Vehicle")) %>%
-            group_by(Timepoint,Strain,Treatment) %>%
-            identity()
+        if (input$gene == "") {
+            return(data.frame())
+        } else {
+            parnell_data_list[[input$gene]] %>%
+                filter(Strain %in% input$mouse_strains) %>%
+                #slightly strange if else here, turns out inline if-else like this
+                #is cool in a tidyverse pipe
+                filter(Treatment %in% if(input$include_PAE) c("Vehicle","PAE") else c("Vehicle")) %>%
+                group_by(Timepoint,Strain,Treatment) %>%
+                identity()
+        }
     })
     
     selected_data_full <- reactive({
+        if (input$gene == "") {
+            return(data.frame())
+        } else {
         parnell_data_full_list[[input$gene]] %>%
             filter(Strain %in% input$mouse_strains) %>%
             #slightly strange if else here, turns out inline if-else like this
             #is cool in a tidyverse pipe
-            filter(Treatment %in% if(input$include_PAE) c("Vehicle","EtOH") else c("Vehicle")) %>%
+            filter(Treatment %in% if(input$include_PAE) c("Vehicle","PAE") else c("Vehicle")) %>%
             group_by(Timepoint,Strain,Treatment) %>%
             identity()
+        }
     })
     
     output$expressionPlot <- renderPlot({
@@ -90,6 +106,11 @@ server <- function(input, output) {
                 facet_wrap(~Timepoint) +
                 ggtitle(input$gene) +
                 ylim(plot_range)
+        } else if (input$gene == "") {
+            ggplot(data.frame(text = "Please Select a Gene"),
+                   aes(x=0,y=0,label=text)) +
+                geom_text() +
+                theme_void()
         } else {
             ggplot(data.frame(text = "Please Make a Different Selection\nNo Data Found"),
                    aes(x=0,y=0,label=text)) +
@@ -99,8 +120,12 @@ server <- function(input, output) {
     })
     
     output$data_summary <- renderReactable({
-        reactable(selected_data(), 
-                  filterable = TRUE)
+        if (dim(selected_data())[1] > 0) {
+            reactable(selected_data(), 
+                      filterable = TRUE)
+        } else {
+            
+        }
     })
     
     output$download_data_summary <- downloadHandler(
