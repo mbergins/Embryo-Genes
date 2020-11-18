@@ -10,7 +10,8 @@ plot_range = c(floor(min(parnell_data$Mean-parnell_data$SE)), ceiling(max(parnel
 gene_list = parnell_data %>% 
     group_by(Gene) %>% 
     summarise(gene_mean_exp = mean(Mean)) %>% 
-    arrange(desc(gene_mean_exp))
+    arrange(desc(gene_mean_exp)) %>%
+    pull(Gene)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -18,9 +19,10 @@ ui <- fluidPage(
     
     sidebarLayout(
         sidebarPanel(
-            selectInput(inputId = "gene",
+            selectizeInput(inputId = "gene",
                         label = h2("Select Gene of Interest"),
-                        choices = gene_list),
+                        choices = gene_list,
+                        options = list(maxOptions = length(gene_list))),
             checkboxInput("include_EtOH",
                           label = 'Include EtOH Treatment',
                           value = F),
