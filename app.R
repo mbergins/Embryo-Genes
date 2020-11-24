@@ -3,6 +3,7 @@ library(tidyverse)
 library(here)
 library(ggplot2)
 library(reactable)
+library(dqshiny)
 
 parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
 parnell_data$Treatment = fct_relevel(as.factor(parnell_data$Treatment), c("PAE","Vehicle"))
@@ -24,20 +25,25 @@ ui <- fluidPage(
     
     sidebarLayout(
         sidebarPanel(
-            selectizeInput(inputId = "gene",
-                           label = h2("Select Gene of Interest"),
-                           choices = gene_list,
-                           multiple = F,
-                           options = list(maxOptions = 10,
-                                          placeholder = "Please Select a Gene",
-                                          items = "",
-                                          maxItems = 1,
-                                          onInitialize = I('function() { this.setValue(""); }'),
-                                          createFilter = I('function(input) { return input.length >= 1;}'),
-                                          openOnFocus = F,
-                                          closeAfterSelect = T
-                                          )
-                           ),            
+            autocomplete_input("gene", 
+                               h2("Select Gene of Interest"), 
+                               sort(gene_list),
+                               placeholder = "Start Typing to Find a Gene",
+                               max_options = 100),
+            # selectizeInput(inputId = "gene",
+            #                label = h2("Select Gene of Interest"),
+            #                choices = gene_list,
+            #                multiple = F,
+            #                options = list(maxOptions = 10,
+            #                               placeholder = "Please Select a Gene",
+            #                               items = "",
+            #                               maxItems = 1,
+            #                               onInitialize = I('function() { this.setValue(""); }'),
+            #                               createFilter = I('function(input) { return input.length >= 1;}'),
+            #                               openOnFocus = F,
+            #                               closeAfterSelect = T
+            #                               )
+            #                ),            
             checkboxGroupInput("mouse_strains", label = h3("Mouse Strains"), 
                                choices = list("C57BL6J" = "C57BL6J", "C57BL6N" = "C57BL6N"),
                                selected = c("C57BL6J","C57BL6N")),
@@ -130,7 +136,9 @@ server <- function(input, output) {
     
     output$data_summary <- renderReactable({
         if (dim(selected_data())[1] > 0) {
-            reactable(selected_data(), 
+            reactable(selected_data() %>% 
+                          mutate(Mean = signif(Mean,3),
+                                 SE = signif(SE, 3)), 
                       filterable = TRUE)
         } else {
             
