@@ -26,7 +26,7 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             autocomplete_input("gene", 
-                               h2("Select Gene of Interest"), 
+                               h2("Select a Gene of Interest"), 
                                sort(gene_list),
                                placeholder = "Start Typing to Find a Gene",
                                max_options = 100),
