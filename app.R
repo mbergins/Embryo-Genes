@@ -20,7 +20,7 @@ gene_list = parnell_data %>%
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-    titlePanel("FAS Data Browser"),
+    titlePanel("Gastrulation-stage mouse embryo transcriptome browser"),
     
     sidebarLayout(
         sidebarPanel(
