@@ -24,24 +24,28 @@ ui <- fluidPage(
     
     sidebarLayout(
         sidebarPanel(
-            # selectizeInput(inputId = "gene",
-            #             label = h2("Select Gene of Interest"),
-            #             choices = gene_list,
-            #             options = list(maxOptions = length(gene_list))),
             selectizeInput(inputId = "gene",
                            label = h2("Select Gene of Interest"),
                            choices = gene_list,
                            multiple = F,
-                           options = list(maxOptions = 50,
+                           options = list(maxOptions = 10,
                                           placeholder = "Please Select a Gene",
+                                          items = "",
                                           maxItems = 1,
-                                          onInitialize = I('function() { this.setValue(""); }'))),            
-            checkboxInput("include_PAE",
-                          label = 'Include prenatal alcohol exposure (PAE) data',
-                          value = F),
+                                          onInitialize = I('function() { this.setValue(""); }'),
+                                          createFilter = I('function(input) { return input.length >= 1;}'),
+                                          openOnFocus = F,
+                                          closeAfterSelect = T
+                                          )
+                           ),            
             checkboxGroupInput("mouse_strains", label = h3("Mouse Strains"), 
                                choices = list("C57BL6J" = "C57BL6J", "C57BL6N" = "C57BL6N"),
                                selected = c("C57BL6J","C57BL6N")),
+            hr(),
+            checkboxInput("include_PAE",
+                          label = 'Include prenatal alcohol exposure (PAE) data',
+                          value = F)
+
         ),
         
         mainPanel(
@@ -109,6 +113,7 @@ server <- function(input, output) {
                            position=position_jitterdodge(jitter.width=0.4)) +
                 facet_wrap(~Timepoint) +
                 ggtitle(input$gene) +
+                theme(text = element_text(size=20)) +
                 ylim(plot_range)
         } else if (input$gene == "") {
             ggplot(data.frame(text = "Please Select a Gene"),
