@@ -5,19 +5,17 @@ library(ggplot2)
 library(reactable)
 library(dqshiny)
 
-parnell_data = read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_forShinyApp.rds'))
-parnell_data$Treatment = fct_relevel(as.factor(parnell_data$Treatment), c("PAE","Vehicle"))
-    
-plot_range = c(floor(min(parnell_data$Mean-parnell_data$SE)), ceiling(max(parnell_data$Mean+parnell_data$SE)))
-
 parnell_data_list = read_rds(here('Parnell_data_split.rds'))
 parnell_data_full_list = read_rds(here('Parnell_data_full_split.rds'))
 
-gene_list = parnell_data %>% 
-    group_by(Gene) %>% 
-    summarise(gene_mean_exp = mean(Mean)) %>% 
-    arrange(desc(gene_mean_exp)) %>%
-    pull(Gene)
+plot_range = lapply(parnell_data_list, 
+                           function(x) {
+                               return(c(min(x$Mean - x$SE), max(x$Mean + x$SE)))
+                           }) %>%
+    unlist() %>%
+    range()
+plot_range[1] = floor(plot_range[1])
+plot_range[2] = ceiling(plot_range[2])
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -27,7 +25,7 @@ ui <- fluidPage(
         sidebarPanel(
             autocomplete_input("gene", 
                                h2("Select a Gene of Interest"), 
-                               sort(gene_list),
+                               sort(names(parnell_data_list)),
                                placeholder = "Start Typing to Find a Gene",
                                max_options = 100),
             # selectizeInput(inputId = "gene",
@@ -51,7 +49,7 @@ ui <- fluidPage(
             checkboxInput("include_PAE",
                           label = 'Include prenatal alcohol exposure (PAE) data',
                           value = F)
-
+            
         ),
         
         mainPanel(
@@ -98,14 +96,14 @@ server <- function(input, output) {
         if (input$gene == "") {
             return(data.frame())
         } else {
-        parnell_data_full_list[[input$gene]] %>%
-            mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
-            filter(Strain %in% input$mouse_strains) %>%
-            #slightly strange if else here, turns out inline if-else like this
-            #is cool in a tidyverse pipe
-            filter(Treatment %in% if(input$include_PAE) c("Vehicle","PAE") else c("Vehicle")) %>%
-            group_by(Timepoint,Strain,Treatment) %>%
-            identity()
+            parnell_data_full_list[[input$gene]] %>%
+                mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
+                filter(Strain %in% input$mouse_strains) %>%
+                #slightly strange if else here, turns out inline if-else like this
+                #is cool in a tidyverse pipe
+                filter(Treatment %in% if(input$include_PAE) c("Vehicle","PAE") else c("Vehicle")) %>%
+                group_by(Timepoint,Strain,Treatment) %>%
+                identity()
         }
     })
     
@@ -114,8 +112,8 @@ server <- function(input, output) {
             ggplot(selected_data(), aes(x=Strain,y=Mean,fill=Treatment)) +
                 geom_bar(stat="identity",position="dodge",alpha=0.5) +
                 geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=0.2,position=position_dodge(width=0.9)) +
-                geom_point(data=selected_data_full(), 
-                           mapping=aes(x=Strain,y=values,color=Treatment), 
+                geom_point(data=selected_data_full(),
+                           mapping=aes(x=Strain,y=values,color=Treatment),
                            position=position_jitterdodge(jitter.width=0.4)) +
                 facet_wrap(~Timepoint) +
                 ggtitle(input$gene) +
