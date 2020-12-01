@@ -4,6 +4,9 @@ library(here)
 library(ggplot2)
 library(reactable)
 library(dqshiny)
+library(shinylogs)
+
+
 
 parnell_data_list = read_rds(here('Parnell_data_split.rds'))
 parnell_data_full_list = read_rds(here('Parnell_data_full_split.rds'))
@@ -76,6 +79,8 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+    #Blocking tracking until after publication
+    # track_usage(storage_mode = store_rds(path = here('logs')))
     
     selected_data <- reactive({
         if (input$gene == "") {
