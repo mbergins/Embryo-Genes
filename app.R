@@ -6,8 +6,6 @@ library(reactable)
 library(dqshiny)
 library(shinylogs)
 
-
-
 parnell_data_list = read_rds(here('Parnell_data_split.rds'))
 parnell_data_full_list = read_rds(here('Parnell_data_full_split.rds'))
 
@@ -24,6 +22,9 @@ plot_range[2] = ceiling(plot_range[2])
 ui <- fluidPage(
     titlePanel("Gastrulation-stage mouse embryo transcriptome browser"),
     
+    tags$p("This visualization tool contains data supporting our manuscript CITATION LINK HERE."),
+
+    tags$p("RNA-seq was performed on normally developing and alcohol-exposed mouse embryos from either the C57BL/6J or C57BL/6NHsd strains. Samples were collected during gastrulation at either embryonic day (E) 7, E7.25, or E7.5. Alcohol-exposed embryos were exposed to 2.9 g/kg ethanol via i.p. injection 4 hr apart beginning at E7. Our study provides a view of how expression of specific genes changes across gastrulation during normal development and the impact of strain and/or alcohol on key developmental genes. Data are normalized based on the mean VST-normalized values from each strain and time point to allow comparison across age, strain, and treatment. Negative values indicate very low/no expression of a particular gene, while values ~0 indicates low expression, and values above 0 indicates moderate to high levels of expression. VST-normalized values for each replicate can be found in the supplemental files of the linked publication."),
     sidebarLayout(
         sidebarPanel(
             autocomplete_input("gene", 
@@ -88,6 +89,7 @@ server <- function(input, output) {
         } else {
             parnell_data_list[[input$gene]] %>%
                 mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
+                mutate(str_treat = paste0(Strain,"\n",Treatment)) %>%
                 filter(Strain %in% input$mouse_strains) %>%
                 #slightly strange if else here, turns out inline if-else like this
                 #is cool in a tidyverse pipe
@@ -103,6 +105,7 @@ server <- function(input, output) {
         } else {
             parnell_data_full_list[[input$gene]] %>%
                 mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
+                mutate(str_treat = paste0(Strain,"\n",Treatment)) %>%
                 filter(Strain %in% input$mouse_strains) %>%
                 #slightly strange if else here, turns out inline if-else like this
                 #is cool in a tidyverse pipe
@@ -114,16 +117,31 @@ server <- function(input, output) {
     
     output$expressionPlot <- renderPlot({
         if (dim(selected_data())[1] > 0) {
-            ggplot(selected_data(), aes(x=Strain,y=Mean,fill=Treatment)) +
+            cols <- c("C57BL6J\nPAE" = "grey", 
+                      "C57BL6J\nVehicle" = "darkgreen", 
+                      "C57BL6N\nPAE" = "grey", 
+                      "C57BL6N\nVehicle" = "darkblue")
+
+            ggplot(selected_data(),aes(x=Strain,y=Mean,color=str_treat, fill=str_treat)) +
                 geom_bar(stat="identity",position="dodge",alpha=0.5) +
                 geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=0.2,position=position_dodge(width=0.9)) +
                 geom_point(data=selected_data_full(),
-                           mapping=aes(x=Strain,y=values,color=Treatment),
-                           position=position_jitterdodge(jitter.width=0.4)) +
+                           mapping=aes(x=Strain,y=values,color=str_treat, fill = str_treat),
+                           position=position_jitterdodge(jitter.width=0.25)) +
+                labs(y="Mean-centered expression", 
+                     color = "Strain\nTreatment",
+                     fill = "Strain\nTreatment") +
                 facet_wrap(~Timepoint) +
                 ggtitle(input$gene) +
-                theme(text = element_text(size=20)) +
+                theme(text = element_text(size=20)) + 
+                theme(panel.grid.major = element_blank(), 
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank(), 
+                      axis.line = element_line(colour = "black")) +
+                scale_colour_manual(values = cols) +
+                scale_fill_manual(values = cols) +
                 ylim(plot_range)
+
         } else if (input$gene == "") {
             ggplot(data.frame(text = "Please Select a Gene"),
                    aes(x=0,y=0,label=text)) +
@@ -141,7 +159,8 @@ server <- function(input, output) {
         if (dim(selected_data())[1] > 0) {
             reactable(selected_data() %>% 
                           mutate(Mean = signif(Mean,3),
-                                 SE = signif(SE, 3)), 
+                                 SE = signif(SE, 3)) %>%
+                          select(-str_treat), 
                       filterable = TRUE)
         } else {
             
