@@ -32,6 +32,7 @@ ui <- fluidPage(
                                sort(names(parnell_data_list)),
                                placeholder = "Start Typing to Find a Gene",
                                max_options = 100),
+            tags$p("*Searches are case-sensitive, format gene name with capital first letter"),
             # selectizeInput(inputId = "gene",
             #                label = h2("Select Gene of Interest"),
             #                choices = gene_list,
@@ -123,6 +124,7 @@ server <- function(input, output) {
                       "C57BL6N\nVehicle" = "darkblue")
 
             ggplot(selected_data(),aes(x=Strain,y=Mean,color=str_treat, fill=str_treat)) +
+                geom_hline(yintercept = 0, color = "black") +
                 geom_bar(stat="identity",position="dodge",alpha=0.5) +
                 geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=0.2,position=position_dodge(width=0.9)) +
                 geom_point(data=selected_data_full(),
