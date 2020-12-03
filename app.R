@@ -197,9 +197,9 @@ server <- function(input, output) {
     )
     
     output$download_full_data <- downloadHandler(
-        filename = "FAS_full_data_set.csv.gz",
+        filename = "FAS_full_data_set.csv",
         content = function(file) {
-            write_csv(read_rds(here('Parnell_GD7_GD7.25_GD7.5_EtOH_scaledVST_table.rds')), file)
+            write_csv(read_rds(here('Parnell_data_reformated.rds')), file)
         }
     )
     
