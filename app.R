@@ -18,6 +18,8 @@ plot_range = lapply(parnell_data_list,
 plot_range[1] = floor(plot_range[1])
 plot_range[2] = ceiling(plot_range[2])
 
+lower_case_match = read_rds(here('lower_case_match.rds'))
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
     titlePanel("Gastrulation-stage mouse embryo transcriptome browser"),
@@ -29,7 +31,7 @@ ui <- fluidPage(
         sidebarPanel(
             autocomplete_input("gene", 
                                h2("Select a Gene of Interest"), 
-                               sort(names(parnell_data_list)),
+                               c(sort(names(parnell_data_list)), sort(tolower(names(parnell_data_list)))),
                                placeholder = "Start Typing to Find a Gene",
                                max_options = 100),
             tags$p("*Searches are case-sensitive, format gene name with capital first letter"),
@@ -85,10 +87,19 @@ server <- function(input, output) {
     # track_usage(storage_mode = store_rds(path = here('logs')))
     
     selected_data <- reactive({
+        selected_gene = input$gene
+        if (is.null(parnell_data_list[[input$gene]])) {
+            if (is.null(lower_case_match[[selected_gene]])) {
+                return(data.frame())
+            } else {
+                selected_gene = lower_case_match[[selected_gene]]
+            }
+        }
+        
         if (input$gene == "") {
             return(data.frame())
         } else {
-            parnell_data_list[[input$gene]] %>%
+            parnell_data_list[[selected_gene]] %>%
                 mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
                 mutate(str_treat = paste0(Strain,"\n",Treatment)) %>%
                 filter(Strain %in% input$mouse_strains) %>%
@@ -101,10 +112,19 @@ server <- function(input, output) {
     })
     
     selected_data_full <- reactive({
+        selected_gene = input$gene
+        if (is.null(parnell_data_list[[input$gene]])) {
+            if (is.null(lower_case_match[[selected_gene]])) {
+                return(data.frame())
+            } else {
+                selected_gene = lower_case_match[[selected_gene]]
+            }
+        }
+        
         if (input$gene == "") {
             return(data.frame())
         } else {
-            parnell_data_full_list[[input$gene]] %>%
+            parnell_data_full_list[[selected_gene]] %>%
                 mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
                 mutate(str_treat = paste0(Strain,"\n",Treatment)) %>%
                 filter(Strain %in% input$mouse_strains) %>%
@@ -134,7 +154,7 @@ server <- function(input, output) {
                      color = "Strain\nTreatment",
                      fill = "Strain\nTreatment") +
                 facet_wrap(~Timepoint) +
-                ggtitle(input$gene) +
+                ggtitle(selected_data()$Gene[1]) +
                 theme(text = element_text(size=20)) + 
                 theme(panel.grid.major = element_blank(), 
                       panel.grid.minor = element_blank(),
