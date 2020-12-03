@@ -117,9 +117,9 @@ server <- function(input, output) {
     
     output$expressionPlot <- renderPlot({
         if (dim(selected_data())[1] > 0) {
-            cols <- c("C57BL6J\nPAE" = "grey", 
+            cols <- c("C57BL6J\nPAE" = "grey30", 
                       "C57BL6J\nVehicle" = "darkgreen", 
-                      "C57BL6N\nPAE" = "grey", 
+                      "C57BL6N\nPAE" = "grey60", 
                       "C57BL6N\nVehicle" = "darkblue")
 
             ggplot(selected_data(),aes(x=Strain,y=Mean,color=str_treat, fill=str_treat)) +
