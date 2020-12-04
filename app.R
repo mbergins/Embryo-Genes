@@ -50,7 +50,7 @@ ui <- fluidPage(
             #                               )
             #                ),            
             checkboxGroupInput("mouse_strains", label = h3("Mouse Strains"), 
-                               choices = list("C57BL6J" = "C57BL6J", "C57BL6N" = "C57BL6N"),
+                               choices = list("C57BL/6J" = "C57BL6J", "C57BL/6N" = "C57BL6N"),
                                selected = c("C57BL6J","C57BL6N")),
             hr(),
             checkboxInput("include_PAE",
@@ -100,8 +100,9 @@ server <- function(input, output) {
             return(data.frame())
         } else {
             parnell_data_list[[selected_gene]] %>%
-                mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
+                mutate(Treatment = fct_relevel(Treatment,c("PAE","Vehicle"))) %>%
                 mutate(str_treat = paste0(Strain,"\n",Treatment)) %>%
+                mutate(str_treat = fct_relevel(str_treat, c("C57BL6J\nVehicle","C57BL6N\nVehicle"))) %>%
                 filter(Strain %in% input$mouse_strains) %>%
                 #slightly strange if else here, turns out inline if-else like this
                 #is cool in a tidyverse pipe
@@ -125,8 +126,9 @@ server <- function(input, output) {
             return(data.frame())
         } else {
             parnell_data_full_list[[selected_gene]] %>%
-                mutate(Treatment = fct_relevel(Treatment,c("Vehicle","PAE"))) %>%
+                mutate(Treatment = fct_relevel(Treatment,c("PAE","Vehicle"))) %>%
                 mutate(str_treat = paste0(Strain,"\n",Treatment)) %>%
+                mutate(str_treat = fct_relevel(str_treat, c("C57BL6J\nVehicle","C57BL6N\nVehicle"))) %>%
                 filter(Strain %in% input$mouse_strains) %>%
                 #slightly strange if else here, turns out inline if-else like this
                 #is cool in a tidyverse pipe
