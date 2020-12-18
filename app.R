@@ -24,6 +24,8 @@ lower_case_match = read_rds(here('lower_case_match.rds'))
 ui <- fluidPage(
     titlePanel("Gastrulation-stage mouse embryo transcriptome browser"),
     
+    tags$head(tags$style(".rightAlign{float:right;}")),
+    
     tags$p("This visualization tool contains data supporting our manuscript CITATION LINK HERE."),
 
     tags$p("RNA-seq was performed on normally developing and alcohol-exposed mouse embryos from either the C57BL/6J or C57BL/6NHsd strains. Samples were collected during gastrulation at either embryonic day (E) 7, E7.25, or E7.5. Alcohol-exposed embryos were exposed to alcohol beginning at E7. Our study provides a view of how expression of specific genes changes across gastrulation during normal development and the impact of strain and/or alcohol on key developmental genes. Data are normalized based on the mean VST-normalized values from each strain and time point to allow comparison across age, strain, and treatment. Negative values indicate very low/no expression of a particular gene, while values ~0 indicates low expression, and values above 0 indicates moderate to high levels of expression. VST-normalized values for each replicate can be found in the supplemental files of the linked publication."),
@@ -75,9 +77,11 @@ ui <- fluidPage(
              column(2,
                     downloadButton("download_data_summary", "Download Selected Data")
              ),
-             column(10,
+             column(9,
                     downloadButton("download_full_data", "Download Full Data Set")
-             )
+             ),
+             column(1,
+                    tags$a(href="https://github.com/mbergins/Embryo-Genes", icon("github", class="rightAlign fa-2x")))
     )
 )
 
