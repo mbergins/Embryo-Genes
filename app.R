@@ -24,6 +24,8 @@ lower_case_match = read_rds(here('lower_case_match.rds'))
 ui <- fluidPage(
     titlePanel("Gastrulation-stage mouse embryo transcriptome browser"),
     
+    tags$title("Gastrulation-stage mouse embryo transcriptome browser"),
+    
     tags$head(tags$style(".rightAlign{float:right;}")),
     
     tags$p("This visualization tool contains data supporting our manuscript CITATION LINK HERE."),
