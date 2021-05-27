@@ -28,7 +28,9 @@ ui <- fluidPage(
     
     tags$head(tags$style(".rightAlign{float:right;}")),
     
-    tags$p("This visualization tool contains data supporting our manuscript CITATION LINK HERE."),
+    tags$p("This visualization tool contains data supporting our manuscript published in Disease Models and Mechanisms."),
+    
+    tags$p("If you use this tool please cite: Boschen, et al.; Transcriptomic analyses of gastrulation-stage C57BL/6J and C57BL/6NHsd mouse embryos with differential susceptibility to alcohol. Dis Model Mech 2021; dmm.049012. doi: ", a(href="https://doi.org/10.1242/dmm.049012", "https://doi.org/10.1242/dmm.049012")),
 
     tags$p("RNA-seq was performed on normally developing and alcohol-exposed mouse embryos from either the C57BL/6J or C57BL/6NHsd strains. Samples were collected during gastrulation at either embryonic day (E) 7, E7.25, or E7.5. Alcohol-exposed embryos were exposed to alcohol beginning at E7. Our study provides a view of how expression of specific genes changes across gastrulation during normal development and the impact of strain and/or alcohol on key developmental genes. Data are normalized based on the mean VST-normalized values from each strain and time point to allow comparison across age, strain, and treatment. Negative values indicate very low/no expression of a particular gene, while values ~0 indicates low expression, and values above 0 indicates moderate to high levels of expression. VST-normalized values for each replicate can be found in the supplemental files of the linked publication."),
     sidebarLayout(
@@ -89,8 +91,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    #Blocking tracking until after publication
-    # track_usage(storage_mode = store_rds(path = here('logs')))
+    track_usage(storage_mode = store_rds(path = here('logs')))
     
     selected_data <- reactive({
         selected_gene = input$gene
