@@ -11,6 +11,6 @@ In addition to shiny, this application requires the tidyverse, here, ggplot2, re
 
 ## Citation
 
-If you use the code or data assocaited with this repository, please cite:
+If you use the code or data associated with this repository, please cite:
 
 Boshen et al. Transcriptomic analyses of two closely related substrains of gastrulation-stage mouse embryos with differential susceptibility to prenatal alcohol exposure, Dis Model Mech 2021; dmm.049012. doi: https://doi.org/10.1242/dmm.049012
